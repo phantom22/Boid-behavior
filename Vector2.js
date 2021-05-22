@@ -1,6 +1,6 @@
 const Vector2 = function(x,y) { if (typeof x != 'number' || typeof y != 'number') { throw new Error(`expected two arguments of type 'number', got '${typeof x}, ${typeof y}'`) } this.x = x; this.y = y }
 Vector2.prototype.magnitude = function() { return Math.sqrt(this.x ** 2 + this.y ** 2) };
-Vector2.prototype.normalize = function () { const magnitude = this.magnitude(); let normalized; if (magnitude != 0) { normalized = Vector2.divide(this, magnitude) } else { normalized = Vector2.from_number(0) } return normalized };
+Vector2.prototype.normalize = function () { const magnitude = this.magnitude(); let normalized; if (magnitude != 0) { normalized = Vector2.divide(this, Vector2.from_number(magnitude)) } else { normalized = Vector2.from_number(0) } return normalized };
 Vector2.prototype.scalar = function() { const normalized = this.normalize(); return (normalized.x + normalized.y) / 2 };
 Vector2.prototype.floor = function() { return new Vector2(Math.floor(this.x), Math.floor(this.y)) };
 Vector2.prototype.ceil = function() { return new Vector2(Math.ceil(this.x), Math.ceil(this.y)) };
@@ -25,7 +25,7 @@ Vector2.lerp = function(a, b, t) { return new Vector2((1 - t.x) * a.x + b.x * t.
 Vector2.invLerp = function(a, b, v) { return new Vector2((v.x - a.x) / (b.x - a.x), (v.y - a.y) / (b.y - a.y)) }
 Vector2.remap = function(inputMin, inputMax, outputMin, outputMax, v) { const t = Vector2.invLerp(inputMin, inputMax, v); return Vector2.lerp(outputMin, outputMax, t) }
 
-Vector2.angle = function(a, b) { const angle = Math.acos(Vector2.dot(a, b) / ( Math.sqrt(a.magnitude() * b.magnitude()) ) ); return isNaN(angle) ? 0 : angle }
+Vector2.angle = function(a, b) { const angle = Math.acos(Vector2.dot(a, b) / Math.sqrt(a.magnitude()) * Math.sqrt(b.magnitude())); return isNaN(angle) ? 0 : angle }
 Vector2.zero = Vector2.from_number(0);
 Vector2.up = new Vector2(0, 1);
 Vector2.down = new Vector2(0, -1);
