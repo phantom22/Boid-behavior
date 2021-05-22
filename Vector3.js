@@ -21,7 +21,7 @@ Vector3.clamp = function(vector, min, max) { vector.x = Math.max(min.x, Math.min
 Vector3.random = function(max, min) { max = max ?? 1; min = min ?? 0; return new Vector3(Math.random() * (max - min) + min, Math.random() * (max - min) + min, Math.random() * (max - min) + min) };
 Vector3.range = function(max, min) { min = min ?? Vector3.zero; return new Vector3(Math.random() * (max.x - min.x) + min.x, Math.random() * (max.y - min.y) + min.y, Math.random() * (max.z - min.z) + min.z) };
 
-Vector3.lerp = function(a, b, t) { t = Math.max(0, Math.min(1, t)); return new Vector3((1 - t) * a.x + b.x * t, (1 - t) * a.y + b.y * t, (1 - t) * a.z + b.z * t) }
+Vector3.lerp = function(a, b, t) { t = Math.max(0, Math.min(1, t)); return new Vector3((1 - t.x) * a.x + b.x * t.x, (1 - t.y) * a.y + b.y * t.y, (1 - t) * a.z + b.z * t.z) }
 Vector3.invLerp = function(a, b, v) { return new Vector3((v.x - a.x) / (b.x - a.x), (v.y - a.y) / (b.y - a.y), (v.z - a.z) / (b.z - a.z)) }
 Vector3.remap = function(inputMin, inputMax, outputMin, outputMax, v) { const t = Vector3.invLerp(inputMin, inputMax, v); return Vector3.lerp(outputMin, outputMax, t) }
 
