@@ -32,6 +32,6 @@ Vector3.down = new Vector3(0, -1, 0);
 Vector3.right = new Vector3(1, 0, 0);
 Vector3.left = new Vector3(-1, 0, 0);
 Vector3.forward = new Vector3(0, 0, 1);
-Vector3.backward = new Vector3(0, 0, -1);
+Vector3.back = new Vector3(0, 0, -1);
 
 Object.freeze(Vector3);
