@@ -2,7 +2,7 @@ const Vector2 = function(x,y) { if (typeof x != 'number' || typeof y != 'number'
 
 Vector2.prototype = {
 	get magnitude() { return Math.sqrt(this.x ** 2 + this.y ** 2) },
-	get normalize() { const magnitude = this.magnitude; let normalized; if (magnitude != 0) { normalized = Vector2.divide(this, Vector2.from_number(magnitude)) } else { normalized = Vector2.from_number(0) } return normalized },
+	normalized() { const magnitude = this.magnitude; let normalized; if (magnitude != 0) { normalized = Vector2.divide(this, Vector2.from_number(magnitude)) } else { normalized = Vector2.from_number(0) } return normalized },
 	floor() { return new Vector2(Math.floor(this.x), Math.floor(this.y)) },
 	ceil() { return new Vector2(Math.ceil(this.x), Math.ceil(this.y)) },
 	round() { return new Vector2(Math.round(this.x), Math.found(this.y)) }
