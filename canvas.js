@@ -81,7 +81,7 @@ class Agent {
 		this.limits = limits;
 		this.xy = Vector2.range(Vector2.zero, limits);
 		this.angle = Vector2.random(1, -1);
-		this.speed = 0.4;
+		this.speed = 0.15;
 	}
 	move() {
 		const t = this;
@@ -124,7 +124,22 @@ class Agent {
 }
 
 let agents = [];
-let trailDim = 0.05;
+let agentColor = "white";
+let trailDim = 0.01;
+let agentSteerStrength = 0.02;
+
+let quadrantsX = 30;
+let quadrantsY = 20;
+let quadrants = [];
+let agentQuadrants = [];
+
+function resetQuadrants() {
+	quadrants = [];
+	agentQuadrants = [];
+	for (let i = 0; i < quadrantsX * quadrantsY; i++) {
+		quadrants.push(0);
+	}
+}
 
 const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 
@@ -132,17 +147,68 @@ const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 	t.ctx.fillStyle = "rgba(0, 0, 0, " + trailDim + ")";
 	t.ctx.fillRect(0, 0, t.width, t.height);
 
+	resetQuadrants();
+
 	for (let i = 0; i < agents.length; i++) {
 
 		const agent = agents[i];
 		const oldPos = agent.xy;
 		agent.move();
+		//agent.angle = Vector2.add(agent.angle, new Vector2(0.01, 0));
 		const newPos = agent.xy;
+		const quadrant = Math.floor(newPos.y / quadrantsY * quadrantsX + newPos.x / quadrantsX);
+		quadrants[ quadrant ] += 1;
+		agentQuadrants[i] = quadrant;
 
 		if (oldPos.x != newPos.x || oldPos.y != newPos.y) {
 
-			t.drawLine(oldPos, newPos, 'white');
+			t.drawLine(oldPos, newPos, agentColor);
 
+		}
+
+	}
+
+	for (let i = 0; i < agents.length; i++) {
+
+		const angle = agents[i].angle;
+		const quadrant = agentQuadrants[i];
+		let adjacent = [quadrant - 1, quadrant + 1, quadrant - 20, quadrant + 20, quadrant - 19, quadrant - 21, quadrant + 21, quadrant + 19].map(index => quadrants[index]);
+		let highest = 0;
+		let best = 0;
+
+		for (let dir = 0; dir < adjacent.length; dir++) {
+			const numberOfAgents = adjacent[dir];
+			if (typeof numberOfAgents == "number" && numberOfAgents > highest) {
+				highest = numberOfAgents;
+				best = dir;
+			}
+		}
+
+		switch(best) {
+			case 0:
+			agents[i].angle = Vector2.add(angle, new Vector2(-agentSteerStrength, 0));
+			break;
+			case 1:
+			agents[i].angle = Vector2.add(angle, new Vector2(agentSteerStrength, 0));
+			break;
+			case 2:
+			agents[i].angle = Vector2.add(angle, new Vector2(0, -agentSteerStrength));
+			break;
+			case 3:
+			agents[i].angle = Vector2.add(angle, new Vector2(0, agentSteerStrength));
+			break;
+			case 4:
+			agents[i].angle = Vector2.add(angle, new Vector2(agentSteerStrength, -agentSteerStrength));
+			break;
+			case 5:
+			agents[i].angle = Vector2.add(angle, new Vector2(-agentSteerStrength, -agentSteerStrength));
+			break;
+			case 6:
+			agents[i].angle = Vector2.add(angle, new Vector2(agentSteerStrength, agentSteerStrength));
+			break;
+			case 7:
+			agents[i].angle = Vector2.add(angle, new Vector2(-agentSteerStrength, agentSteerStrength));
+			break;
 		}
 
 	}
