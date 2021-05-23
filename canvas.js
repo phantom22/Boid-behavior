@@ -79,7 +79,7 @@ class Canvas {
 class Agent {
 	constructor(limits) {
 		this.limits = limits;
-		this.xy = Vector2.range(limits);
+		this.xy = Vector2.range(Vector2.zero, limits);
 		this.angle = Vector2.random(1, -1);
 		this.speed = 0.4;
 	}
@@ -124,7 +124,7 @@ class Agent {
 }
 
 let agents = [];
-let trailDim = 0.3;
+let trailDim = 0.05;
 
 const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 
