@@ -79,7 +79,7 @@ class Canvas {
 class Agent {
 	constructor(limits) {
 		this.limits = limits;
-		this.xy = Vector2.range(Vector2.zero, limits);
+		this.xy = /*Vector2.range(Vector2.zero, limits)*/ new Vector2(CANVAS.dimensions.x / 2, CANVAS.dimensions.y / 2);
 		this.angle = Vector2.random(1, -1);
 	}
 	move() {
@@ -98,15 +98,15 @@ class Agent {
 let agents = [];
 let agentColor = "white";
 let agentSpeed = 100;
-let trailDim = 0.15;
-let agentSteerStrength = 1;
+let trailDim = 0.02;
+let agentSteerStrength = 8;
 
-let quadrantsX = 650;
-let quadrantsY = 500;
+let quadrantsX = 30 * 1.7;
+let quadrantsY = 27 * 1.7;
 let quadrants = [];
 let agentQuadrants = [];
 
-const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
+const CANVAS = new Canvas("#canvas-output", 1000, 900, function(t){
 
 	// trail effect
 	t.ctx.fillStyle = "rgba(0, 0, 0, " + trailDim + ")";
@@ -115,8 +115,8 @@ const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 	quadrants = [];
 	agentQuadrants = [];
 
-	const _optimizedX = 1 / quadrantsX;
-	const _optimizedY = 1 / quadrantsY;
+	const _optimizedX = 1 / (t.dimensions.x / quadrantsX);
+	const _optimizedY = 1 / (t.dimensions.y / quadrantsY);
 
 	for (let i = 0; i < agents.length; i++) {
 
@@ -142,7 +142,7 @@ const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 		const angle = agents[i].angle,
 			  quadrant = agentQuadrants[i];
 
-			  // make so the agents don't see behind them
+		// Use agent angle to determine the 3 quadrants in front of him
 		let adjacent = [quadrant - 1, quadrant + 1, quadrant - quadrantsX, quadrant + quadrantsX, quadrant - quadrantsX - 1, quadrant - quadrantsX + 1, quadrant + quadrantsX + 1, quadrant + quadrantsX - 1];
 		
 		let mostNumberOfAgents = 0,
@@ -155,7 +155,7 @@ const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 				mostNumberOfAgents = numberOfAgentsInCell;
 				bestDirection = dir;
 			}
-			else if (numberOfAgentsInCell === mostNumberOfAgents) {
+			else if (numberOfAgentsInCell == mostNumberOfAgents) {
 				indecision[0] = true;
 				indecision[1] = numberOfAgentsInCell;
 			}
@@ -192,7 +192,7 @@ const CANVAS = new Canvas("#canvas-output", 1000, 800, function(t){
 					break;
 			}
 
-			const scalar = Vector2.multiply(Vector2.from_number(deltaTime), Vector2.random(0, 1));
+			const scalar = Vector2.multiply(Vector2.from_number(deltaTime), Vector2.random(0, 2));
 
 			agents[i].angle = Vector2.add(angle, Vector2.multiply(newAngle, scalar));
 
