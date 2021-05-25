@@ -79,7 +79,7 @@ class Canvas {
 class Agent {
 	constructor(limits) {
 		this.limits = limits;
-		this.xy = /*Vector2.range(Vector2.zero, limits)*/ new Vector2(CANVAS.dimensions.x / 2, CANVAS.dimensions.y / 2);
+		this.xy = Vector2.range(Vector2.zero, limits);// new Vector2(CANVAS.dimensions.x / 2, CANVAS.dimensions.y / 2);
 		this.angle = Vector2.random(1, -1);
 	}
 	move() {
@@ -97,16 +97,16 @@ class Agent {
 
 let agents = [];
 let agentColor = "white";
-let agentSpeed = 100;
-let trailDim = 0.02;
-let agentSteerStrength = 8;
+let agentSpeed = 30;
+let trailDim = 0.05;
+let agentSteerStrength = 16;
 
-let quadrantsX = 30 * 1.7;
-let quadrantsY = 27 * 1.7;
+let quadrantsX = 30 * 10;
+let quadrantsY = 27 * 10;
 let quadrants = [];
 let agentQuadrants = [];
 
-const CANVAS = new Canvas("#canvas-output", 1000, 900, function(t){
+const CANVAS = new Canvas("#canvas-output", 900, 900, function(t){
 
 	// trail effect
 	t.ctx.fillStyle = "rgba(0, 0, 0, " + trailDim + ")";
@@ -139,62 +139,111 @@ const CANVAS = new Canvas("#canvas-output", 1000, 900, function(t){
 
 	for (let i = 0; i < agents.length; i++) {
 
-		const angle = agents[i].angle,
+		const degrees = Vector2.angle_from_origin(agents[i].angle),
 			  quadrant = agentQuadrants[i];
 
-		// Use agent angle to determine the 3 quadrants in front of him
-		let adjacent = [quadrant - 1, quadrant + 1, quadrant - quadrantsX, quadrant + quadrantsX, quadrant - quadrantsX - 1, quadrant - quadrantsX + 1, quadrant + quadrantsX + 1, quadrant + quadrantsX - 1];
-		
+		const _all = [
+			  	quadrant + quadrantsX + 1, 
+			  	quadrant + quadrantsX, 
+			  	quadrant + quadrantsX - 1, 
+			  	quadrant - 1, 
+			  	quadrant - quadrantsX - 1, 
+			  	quadrant - quadrantsX, 
+			  	quadrant - quadrantsX + 1, 
+			  	quadrant + 1
+			  ]
+
+		let direction,
+			adjacent;
+
+		// A B
+		if (degrees >= 337.5 || degrees <= 22.5) {
+			direction = 0;
+			adjacent = _all.slice(0, 3);
+		}
+		// B C
+		else if (degrees >= 22.5 && degrees <= 67.5) {
+			direction = 1;
+			adjacent = _all.slice(1, 4);
+		}
+		// C D
+		else if (degrees >= 67.5 && degrees <= 112.5) {
+			direction = 2;
+			adjacent = _all.slice(2, 5);
+		}
+		// D E
+		else if (degrees >= 112.5 && degrees <= 157.5) {
+			direction = 3;
+			adjacent = _all.slice(3, 6);
+		}
+		// E F
+		else if (degrees >= 157.5 && degrees <= 202.5) {
+			direction = 4;
+			adjacent = _all.slice(4, 7);
+		}
+		// F G
+		else if (degrees >= 202.5 && degrees <= 247.5) {
+			direction = 5;
+			adjacent = _all.slice(5);
+		}
+		// G H
+		else if (degrees >= 247.5 && degrees <= 292.5) {
+			direction = 6;
+			adjacent = [..._all.slice(6), _all[0]];
+		}
+		// H A
+		else if (degrees >= 292.5 && degrees <= 337.5) {
+			direction = 7;
+			adjacent = [_all[7], ..._all.slice(0,2)];
+		}
+
 		let mostNumberOfAgents = 0,
-			bestDirection = 0,
-			indecision = [false, -1];
+			bestDirection = -1;
 
 		for (let dir = 0; dir < adjacent.length; dir++) {
 			const numberOfAgentsInCell = quadrants[adjacent[dir]];
 			if (typeof numberOfAgentsInCell == "number" && numberOfAgentsInCell > mostNumberOfAgents) {
 				mostNumberOfAgents = numberOfAgentsInCell;
-				bestDirection = dir;
-			}
-			else if (numberOfAgentsInCell == mostNumberOfAgents) {
-				indecision[0] = true;
-				indecision[1] = numberOfAgentsInCell;
+				bestDirection =  direction + dir;
 			}
 		}
 
-		if (mostNumberOfAgents != 0 && (!indecision[0] || indecision[1] != mostNumberOfAgents)) {
+		bestDirection = bestDirection > 7 ? bestDirection - 8 : bestDirection;
+
+		if (bestDirection != -1 && direction != bestDirection) {// && direction != bestDirection) {
 
 			let newAngle;
 
 			switch(bestDirection) {
 				case 0:
-					newAngle = new Vector2(-agentSteerStrength, 0);
+					newAngle = new Vector2(agentSteerStrength, agentSteerStrength);
 					break;
 				case 1:
-					newAngle  = new Vector2(agentSteerStrength, 0);
-					break;
-				case 2:
-					newAngle  = new Vector2(0, -agentSteerStrength);
-					break;
-				case 3:
 					newAngle  = new Vector2(0, agentSteerStrength);
 					break;
-				case 4:
-					newAngle  = new Vector2(agentSteerStrength, -agentSteerStrength);
+				case 2:
+					newAngle  = new Vector2(-agentSteerStrength, agentSteerStrength);
 					break;
-				case 5:
+				case 3:
+					newAngle  = new Vector2(-agentSteerStrength, 0);
+					break;
+				case 4:
 					newAngle  = new Vector2(-agentSteerStrength, -agentSteerStrength);
 					break;
+				case 5:
+					newAngle  = new Vector2(0, -agentSteerStrength);
+					break;
 				case 6:
-					newAngle  = new Vector2(agentSteerStrength, agentSteerStrength);
+					newAngle  = new Vector2(agentSteerStrength, -agentSteerStrength);
 					break;
 				case 7:
-					newAngle  = new Vector2(-agentSteerStrength, agentSteerStrength);
+					newAngle  = new Vector2(agentSteerStrength, 0);
 					break;
 			}
 
-			const scalar = Vector2.multiply(Vector2.from_number(deltaTime), Vector2.random(0, 2));
+			const scalar = Vector2.from_number(deltaTime);//Vector2.multiply(Vector2.from_number(deltaTime), Vector2.random(0, 2));
 
-			agents[i].angle = Vector2.add(angle, Vector2.multiply(newAngle, scalar));
+			agents[i].angle = Vector2.add(agents[i].angle, Vector2.multiply(newAngle, scalar));
 
 		}
 
@@ -202,6 +251,6 @@ const CANVAS = new Canvas("#canvas-output", 1000, 900, function(t){
 
 });
 
-for (let a = 0; a < 500; a++) {
+for (let a = 0; a < 2000; a++) {
 	agents.push(new Agent(CANVAS.dimensions));
 }

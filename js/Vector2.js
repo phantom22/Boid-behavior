@@ -2,7 +2,7 @@ const Vector2 = function(x,y) { if (typeof x != 'number' || typeof y != 'number'
 
 Vector2.prototype = {
 	magnitude() { return Math.sqrt(this.x ** 2 + this.y ** 2) },
-	normalize() { const magnitude = this.magnitude; let normalized; if (magnitude != 0) { normalized = Vector2.divide(this, Vector2.from_number(magnitude)) } else { normalized = Vector2.from_number(0) } return normalized },
+	normalize() { const magnitude = this.magnitude(); let normalized; if (magnitude != 0) { normalized = Vector2.divide(this, Vector2.from_number(magnitude)) } else { normalized = Vector2.from_number(0) } return normalized },
 	floor() { return new Vector2(Math.floor(this.x), Math.floor(this.y)) },
 	ceil() { return new Vector2(Math.ceil(this.x), Math.ceil(this.y)) },
 	round() { return new Vector2(Math.round(this.x), Math.round(this.y)) }
@@ -31,6 +31,8 @@ Vector2.invLerp = function(a, b, v) { return ((v.x - a.x) / (b.x - a.x) + (v.y -
 Vector2.remap = function(inputMin, inputMax, outputMin, outputMax, v) { const t = Vector2.invLerp(inputMin, inputMax, v); return Vector2.lerp(outputMin, outputMax, t) }
 
 Vector2.angle = function(a, b) { const angle = Math.acos(Vector2.dot(a, b) / (a.magnitude() * b.magnitude())); return isNaN(angle) ? 0 : angle }
+Vector2.angle_from_origin = function(vector) { const equal = Math.atan2(vector.x, vector.y) * (180 / Math.PI); return vector.x < 0 ? 360 - (equal * -1) : equal }
+
 Vector2.zero = new Vector2(0, 0);
 Vector2.up = new Vector2(0, 1);
 Vector2.down = new Vector2(0, -1);
