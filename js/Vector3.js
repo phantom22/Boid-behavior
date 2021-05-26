@@ -75,28 +75,28 @@ Vector3.divide = function(a, b) { return new Vector3(a.x / b.x, a.y / b.y, a.z /
  * @param   {number}   n
  * @return  {Vector3}
  */
-Vector3.add_scalar = function(v, n) { return new Vector3(a.x + n, a.y + n, a.z + n) };
+Vector3.add_scalar = function(v, n) { return new Vector3(v.x + n, v.y + n, v.z + n) };
 /**
  * subtraction between a 3d_vector and a scalar value.
  * @param   {Vector3}  v
  * @param   {number}   n
  * @return  {Vector3}
  */
-Vector3.subtract_scalar = function(v, n) { return new Vector3(a.x - n, a.y - n, a.z - n) };
+Vector3.subtract_scalar = function(v, n) { return new Vector3(v.x - n, v.y - n, v.z - n) };
 /**
  * multiplication between a 3d_vector and a scalar value.
  * @param   {Vector3}  v
  * @param   {number}   n
  * @return  {Vector3}
  */
-Vector3.multiply_scalar = function(v, n) { return new Vector3(a.x * n, a.y * n, a.z * n) };
+Vector3.multiply_scalar = function(v, n) { return new Vector3(v.x * n, v.y * n, v.z * n) };
 /**
  * division between a 3d_vector and a scalar value.
  * @param   {Vector3}  v
  * @param   {number}   n
  * @return  {Vector3}
  */
-Vector3.divide_scalar = function(a, n) { return new Vector3(a.x / n, a.y / n, a.z / n) };
+Vector3.divide_scalar = function(v, n) { return new Vector3(v.x / n, v.y / n, v.z / n) };
 /**
  * dot product of two 3d_vectors.
  * @param   {Vector3}  a
