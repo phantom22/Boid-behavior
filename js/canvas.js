@@ -43,7 +43,7 @@ class Agent {
 	constructor(limits) {
 		this.limits = limits;
 		this.xy = /*Vector2.range(Vector2.zero, limits);*/ new Vector2(CANVAS.dimensions.x / 2, CANVAS.dimensions.y / 2);
-		this.angle = new Vector2(5, 5);//Vector2.random(1, -1);
+		this.angle = Vector2.random(1, -1);
 	}
 	move() {
 		const t = this;
@@ -61,15 +61,14 @@ class Agent {
 let agents = [];
 let agentColor = "white";
 let agentSpeed = 40;
-let trailDim = 0.04;
+let trailDim = 0.02;
 let agentSteerStrength = 7;
 
-// in pixels
-let quadrantSize = 20;
+let quadrantSize = 10; // in pixels
 let quadrants = [];
 let agentQuadrants = [];
 
-const CANVAS = new Canvas("#canvas-output", 600, 600, function(t){
+const CANVAS = new Canvas("#canvas-output", 1800, 800, function(t){
 
 	let quadrantsX = t.dimensions.x / quadrantSize;
 	let quadrantsY = t.dimensions.y / quadrantSize;
@@ -208,9 +207,9 @@ const CANVAS = new Canvas("#canvas-output", 600, 600, function(t){
 					break;
 			}
 
-			const sign = bestDirection > direction ? -1 : 1;
+			//const sign = bestDirection < direction ? -1 : 1;
 
-			const scalar = Vector2.multiply(Vector2.from_number(deltaTime * sign), Vector2.random(0, 1.5));
+			const scalar = Vector2.multiply(Vector2.from_number(bestDirection > direction ? -deltaTime : deltaTime), Vector2.random(0, 1.5));
 
 			agents[i].angle = Vector2.add(agents[i].angle, Vector2.multiply(newAngle, scalar));
 
