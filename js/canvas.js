@@ -139,28 +139,28 @@ function getNewDirection(direction, bestDirection) {
 
 	switch (bestDirection) {
 		case 0:
-			newAngle = [agentSteerStrength, -agentSteerStrength / 10];
+			newAngle = [agentSteerStrength, -agentSteerStrength * 0.5];
 			break;
 		case 1:
-			newAngle = [agentSteerStrength, agentSteerStrength / 10];
+			newAngle = [agentSteerStrength, agentSteerStrength * 0.5];
 			break;
 		case 2:
-			newAngle = [agentSteerStrength / 10, agentSteerStrength];
+			newAngle = [agentSteerStrength * 0.5, agentSteerStrength];
 			break;
 		case 3:
-			newAngle = [-agentSteerStrength / 10, agentSteerStrength];
+			newAngle = [-agentSteerStrength * 0.5, agentSteerStrength];
 			break;
 		case 4:
-			newAngle = [-agentSteerStrength, agentSteerStrength / 10];
+			newAngle = [-agentSteerStrength, agentSteerStrength * 0.5];
 			break;
 		case 5:
-			newAngle = [-agentSteerStrength, -agentSteerStrength / 10];
+			newAngle = [-agentSteerStrength, -agentSteerStrength * 0.5];
 			break;
 		case 6:
-			newAngle = [-agentSteerStrength / 10, -agentSteerStrength];
+			newAngle = [-agentSteerStrength * 0.5, -agentSteerStrength];
 			break;
 		case 7:
-			newAngle = [agentSteerStrength / 10, -agentSteerStrength];
+			newAngle = [agentSteerStrength * 0.5, -agentSteerStrength];
 			break;
 		default:
 			newAngle = [0, 0];
