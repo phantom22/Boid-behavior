@@ -112,6 +112,14 @@ Vector2.dot = function(a, b) { return a.x * b.x + a.y * b.y };
  */
 Vector2.clamp = function(v, min, max) { return new Vector2(Math.max(min.x, Math.min(v.x, max.x)), Math.max(min.y, Math.min(v.y, max.y))) };
 /**
+ * clamp 2d_vector between two numbers.
+ * @param   {Vector2}  v
+ * @param   {Vector2}  min
+ * @param   {Vector2}  max
+ * @return  {Vector2}
+ */
+Vector2.clamp_scalar = function(v, min, max) { return new Vector2(Math.max(min, Math.min(v.x, max)), Math.max(min, Math.min(v.y, max))) };
+/**
  * randomize x and y within the same range.
  * @param   {number}  min
  * @param   {number}  max

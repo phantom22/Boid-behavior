@@ -2,17 +2,23 @@ const deltaTime = 0.016;
 
 // TODO, saveImage is too expensive
 class Canvas {
-	constructor(query, width, height, callback) {
-		const canvas = document.querySelector(query);
-		canvas.width = width;
-		canvas.height = height;
-		canvas.style.width = width;
-		canvas.style.height = height;
+	constructor(settings, agentSettings, callback) {
+		const canvas = document.querySelector(settings.query);
+		canvas.width = settings.dimensions.x;
+		canvas.height = settings.dimensions.y;
+		canvas.style.width = settings.dimensions.x;
+		canvas.style.height = settings.dimensions.y;
 		this.canvas = canvas;
 		this.ctx = this.canvas.getContext("2d");
 		this.callback = callback;
 
-		this.dimensions = new Vector2(width, height);
+		this.dimensions = settings.dimensions;
+
+		this.agents = [];
+
+		for (let a = 0; a < agentSettings.count; a++) {
+			this.agents.push(new Agent(agentSettings));
+		}
 
 		this.drawLoop();
 
@@ -40,19 +46,20 @@ class Canvas {
 }
 
 class Agent {
-	constructor(limits, color) {
-		this.limits = limits;
-		this.xy = new Vector2(limits.x / 2, 0); //Vector2.range(new Vector2(CANVAS.dimensions.x / 5 * 2 , CANVAS.dimensions.y / 5 * 2), new Vector2(CANVAS.dimensions.x / 5 * 3 , CANVAS.dimensions.y / 5 * 3));
-		this.angle = new Vector2(0, 1);//Vector2.random(-1, 1);
-		this.colors = ["lightcoral", "white", "black"];
+	constructor(settings) {
+		this.limits = settings.limits;
+		this.xy = settings.xy; //Vector2.range(new Vector2(CANVAS.dimensions.x / 5 * 2 , CANVAS.dimensions.y / 5 * 2), new Vector2(CANVAS.dimensions.x / 5 * 3 , CANVAS.dimensions.y / 5 * 3));
+		this.angle = settings.angle;//Math.random() * (Math.PI * 2 * 2) - Math.PI * 2;
+		this.colors = settings.colors;
 		this.color = this.colors[Math.floor(Math.random() * 8)];
 	}
 	move() {
-		const t = this;
-		const newPos = Vector2.add(t.xy, new Vector2(t.angle.x * agentSpeed * deltaTime, t.angle.y * agentSpeed * deltaTime));
+		const t = this, 
+			  newPos = Vector2.add(t.xy, new Vector2(Math.cos(t.angle) * agentSettings.speed * deltaTime, Math.sin(t.angle) * agentSettings.speed * deltaTime));
+
 		if (newPos.x < 0 || newPos.x > t.limits.x || newPos.y < 0 || newPos.y > t.limits.y) {
 			t.xy = Vector2.clamp(t.xy, Vector2.zero, t.limits);
-			t.angle = Vector2.random(-1, 1);
+			t.angle = Math.random() * (Math.PI * 2 * 2) - Math.PI * 2;//t.angle * -1 + Math.random() * 1.57 - 0.785;
 			let index = t.colors.indexOf(t.color);
 			index = index + 1 === t.colors.length ? 0 : index + 1;
 			t.color = t.colors[index];
@@ -61,57 +68,60 @@ class Agent {
 			t.xy = newPos;
 		}
 	}
-	getDirection(_all) {
-		const degrees = Vector2.angle_from_origin(this.angle);
+	getDirection(quadrant, quadrantsX, quadrantsY) {
+		const rad = this.angle - Math.PI / 2,
+			  _all = [
+			    	quadrantOffset + quadrant + quadrantsX * quadrantOffset + quadrantOffset, 
+			    	quadrantOffset + quadrant + quadrantsX * quadrantOffset, 
+			    	quadrantOffset + quadrant + quadrantsX * quadrantOffset - quadrantOffset, 
+			    	quadrantOffset + quadrant - quadrantOffset, 
+			    	quadrantOffset + quadrant - quadrantsX * quadrantOffset - quadrantOffset, 
+			    	quadrantOffset + quadrant - quadrantsX * quadrantOffset, 
+			    	quadrantOffset + quadrant - quadrantsX * quadrantOffset + quadrantOffset, 
+			    	quadrantOffset + quadrant + quadrantOffset
+			  ];
+
 
 		let direction,
 			adjacent;
 
-		// H A
-		if (degrees > 292.5 && degrees <= 337.5) {
+		if (rad > 5.105 && rad <= 5.89) {
 			direction = 0;
-			adjacent = [_all[7], ..._all.slice(0,2)];
+			adjacent = [_all[7], _all[0], _all[1]];
 		}
-		// A B
-		else if (degrees > 337.5 || degrees <= 22.5) {
+		else if (rad > 5.89 || rad <= 0.392) {
 			direction = 1;
-			adjacent = _all.slice(0, 3);
+			adjacent = [_all[0], _all[1], _all[2]];
 		}
-		// B C
-		else if (degrees > 22.5 && degrees <= 67.5) {
+		else if (rad > 0.392 && rad <= 1.178) {
 			direction = 2;
-			adjacent = _all.slice(1, 4);
+			adjacent = [_all[1], _all[2], _all[3]];
 		}
-		// C D
-		else if (degrees > 67.5 && degrees <= 112.5) {
+		else if (rad > 1.178 && rad <= 1.963) {
 			direction = 3;
-			adjacent = _all.slice(2, 5);
+			adjacent = [_all[2], _all[3], _all[4]];
 		}
-		// D E
-		else if (degrees > 112.5 && degrees <= 157.5) {
+		else if (rad > 1.963 && rad <= 2.748) {
 			direction = 4;
-			adjacent = _all.slice(3, 6);
+			adjacent = [_all[3], _all[4], _all[5]];
 		}
-		// E F
-		else if (degrees > 157.5 && degrees <= 202.5) {
+		else if (rad > 2.748 && rad <= 3.534) {
 			direction = 5;
-			adjacent = _all.slice(4, 7);
+			adjacent = [_all[4], _all[5], _all[6]];
 		}
-		// F G
-		else if (degrees > 202.5 && degrees <= 247.5) {
+		else if (rad > 3.534 && rad <= 4.319) {
 			direction = 6;
-			adjacent = _all.slice(5);
+			adjacent = [_all[5], _all[6], _all[7]];
 		}
-		// G H
-		else if (degrees > 247.5 && degrees <= 292.5) {
+		else if (rad > 4.319 && rad <= 5.105) {
 			direction = 7;
-			adjacent = [..._all.slice(6), _all[0]];
+			adjacent = [_all[6], _all[7], _all[0]];
 		}
 
 		let mostNumberOfAgents = 0,
 			bestDirection;
 
-		for (let dir = 0; dir < adjacent.length; dir++) {
+		for (let dir = 0; dir < 3; dir++) {
 			const numberOfAgentsInCell = quadrants[adjacent[dir]];
 			if (typeof numberOfAgentsInCell == "number" && numberOfAgentsInCell > mostNumberOfAgents) {
 				mostNumberOfAgents = numberOfAgentsInCell;
@@ -122,134 +132,80 @@ class Agent {
 		bestDirection = bestDirection === -1 ? 7 : bestDirection;
 		bestDirection = bestDirection === 8 ? 0 : bestDirection;
 
-		return { direction, bestDirection }
+		let sign;
+		if (direction + bestDirection === 7) {
+			sign = bestDirection === 7 ? 1 : -1;
+		}
+		else {
+			sign = bestDirection < direction ? 1 : -1;
+		}
+
+		return { notSameDir: typeof bestDirection == "number" && direction != bestDirection, sign }
 	}
 
 }
-/**
- * @param  {number} direction
- * @param  {number} bestDirection
- * @return {Vector2}
- */
-function getNewDirection(direction, bestDirection) {
-	let newAngle;
-	let sign;
 
-	if (direction + bestDirection === 7) {
-		sign = bestDirection === 7 ? 1 : -1;
-	}
-	else {
-		sign = bestDirection < direction ? 1 : -1;
-	}
-
-	switch (bestDirection) {
-		case 0:
-			newAngle = [agentTurnRate, -agentTurnRate * 0.4];
-			break;
-		case 1:
-			newAngle = [agentTurnRate, agentTurnRate * 0.4];
-			break;
-		case 2:
-			newAngle = [agentTurnRate * 0.4, agentTurnRate];
-			break;
-		case 3:
-			newAngle = [-agentTurnRate * 0.4, agentTurnRate];
-			break;
-		case 4:
-			newAngle = [-agentTurnRate, agentTurnRate * 0.4];
-			break;
-		case 5:
-			newAngle = [-agentTurnRate, -agentTurnRate * 0.4];
-			break;
-		case 6:
-			newAngle = [-agentTurnRate * 0.4, -agentTurnRate];
-			break;
-		case 7:
-			newAngle = [agentTurnRate * 0.4, -agentTurnRate];
-			break;
-		default:
-			newAngle = [0, 0];
-			break;
-	}
-	return new Vector2(newAngle[0] * sign, newAngle[1] * sign);
-}
-
-let agents = [];
 let quadrants = [];
-let agentQuadrants = [];
 
-let agentColor = "white";
-let agentSpeed = 200;
-let agentTurnRate = 30;
-let quadrantSize = 5; // in pixels
-let quadrantOffset = 2;
-let trailDim = 0.05;
+let quadrantSize = 100, // in pixels
+	quadrantOffset = 1;
+
+let canvasSettings = {
+	query: "#canvas-output",
+	dimensions: new Vector2(1200, 700)
+}
+
+/** @const {Object} */
+const agentSettings =  {
+	count: 2000,
+	limits: canvasSettings.dimensions,
+	xy: new Vector2(canvasSettings.dimensions.x / 2, canvasSettings.dimensions.y / 2),
+	angle: 1,
+	speed: 300,
+	turnRate: 2,
+	colors: ["lightcoral", "white", "red"],
+	trailDim: 0.05
+}
 
 /** @const {Canvas} */
-const CANVAS = new Canvas("#canvas-output", 1200, 700, function(t){
+const CANVAS = new Canvas(canvasSettings, agentSettings, function(t) {
 
-	let quadrantsX = t.dimensions.x / quadrantSize;
-	let quadrantsY = t.dimensions.y / quadrantSize;
+	t.quadrants = [];
+
+	let quadrantsX = t.dimensions.x / quadrantSize,
+		quadrantsY = t.dimensions.y / quadrantSize;
 
 	// trail effect
-	t.ctx.fillStyle = "rgba(0, 0, 0, " + trailDim + ")";
+	t.ctx.fillStyle = "rgba(0, 0, 0, " + agentSettings.trailDim + ")";
 	t.ctx.fillRect(0, 0, t.dimensions.x, t.dimensions.y);
-
-	quadrants = [];
-	agentQuadrants = [];
 
 	const _optimizedX = 1 / (t.dimensions.x / quadrantsX),
 		  _optimizedY = 1 / (t.dimensions.y / quadrantsY);
 
-	for (let i = 0; i < agents.length; i++) {
+	for (let i = 0; i < t.agents.length; i++) {
 
-		const oldPos = agents[i].xy;
-		agents[i].move();
-		const newPos = agents[i].xy,
+		// get current quadrant
+		const oldPos = t.agents[i].xy,
 			  quadrant = Math.floor(Math.floor(oldPos.y * _optimizedY) * quadrantsX + Math.floor(oldPos.x * _optimizedX));
-		
+
+		// update current quadrant number of agents
 		if (typeof quadrants[quadrant] == "undefined") quadrants[quadrant] = 0;
 		quadrants[quadrant] += 1;
-		agentQuadrants[i] = quadrant;
 
-		if (oldPos.x != newPos.x || oldPos.y != newPos.y) {
-
-			t.drawLine(oldPos, newPos, agents[i].color);
-
-		}
-
-	}
-
-	for (let i = 0; i < agents.length; i++) {
-
-		const quadrant = agentQuadrants[i],
-			  _all = [
-			  	quadrantOffset + quadrant + quadrantsX * quadrantOffset + quadrantOffset, 
-			  	quadrantOffset + quadrant + quadrantsX * quadrantOffset, 
-			  	quadrantOffset + quadrant + quadrantsX * quadrantOffset - quadrantOffset, 
-			  	quadrantOffset + quadrant - quadrantOffset, 
-			  	quadrantOffset + quadrant - quadrantsX * quadrantOffset - quadrantOffset, 
-			  	quadrantOffset + quadrant - quadrantsX * quadrantOffset, 
-			  	quadrantOffset + quadrant - quadrantsX * quadrantOffset + quadrantOffset, 
-			  	quadrantOffset + quadrant + quadrantOffset
-			],
-			{ direction, bestDirection } = agents[i].getDirection(_all);
-
-		if (typeof bestDirection == "number" && direction != bestDirection) {
-
-			let newAngle = getNewDirection(direction, bestDirection);
-
+		// update angle, base on current quadrant
+		const { notSameDir, sign } = t.agents[i].getDirection(quadrant, quadrantsX, quadrantsY);
+		if (notSameDir) {
 			const scalar = deltaTime * Math.random();
-
-			agents[i].angle = Vector2.add(agents[i].angle, Vector2.multiply_scalar(newAngle, scalar));
-			agents[i].angle = Vector2.clamp(agents[i].angle, Vector2.from_number(-1), Vector2.from_number(1));
-
+			t.agents[i].angle += agentSettings.turnRate * sign * scalar;
 		}
+
+		// move agent
+		t.agents[i].move();
+		const newPos = t.agents[i].xy;
+		
+		// draw agent
+		t.drawLine(oldPos, newPos, t.agents[i].color);
 
 	}
 
 });
-
-for (let a = 0; a < 2000; a++) {
-	agents.push(new Agent(CANVAS.dimensions, agentColor));
-}
