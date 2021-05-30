@@ -32,6 +32,8 @@ class Canvas {
 	}
 	drawLine(start, end, color) {
 		const ctx = this.ctx;
+		ctx.lineCap="round";
+		ctx.lineJoin="round";
 		ctx.strokeStyle = color;
 		ctx.beginPath();
 		ctx.moveTo(start.x, start.y);
@@ -48,24 +50,27 @@ class Canvas {
 class Agent {
 	constructor(settings) {
 		this.limits = settings.limits;
-		this.xy = settings.xy; //Vector2.range(new Vector2(CANVAS.dimensions.x / 5 * 2 , CANVAS.dimensions.y / 5 * 2), new Vector2(CANVAS.dimensions.x / 5 * 3 , CANVAS.dimensions.y / 5 * 3));
-		this.angle = settings.angle;//Math.random() * (Math.PI * 2 * 2) - Math.PI * 2;
+		this.xy = Array.isArray(settings.xy) ? Vector2.range(settings.xy[0], settings.xy[1]) : settings.xy;
+		this.angle = settings.angle instanceof Vector2 ? Math.random() * (settings.angle.y - settings.angle.x) + settings.angle.x : settings.angle;
 		this.colors = settings.colors;
-		this.color = this.colors[Math.floor(Math.random() * 8)];
+		this.color = typeof settings.startColor === "number" ? this.colors[settings.startColor] : this.colors[Math.floor(Math.random() * settings.colors.length)];
+		this.justBounced = false;
 	}
 	move() {
 		const t = this, 
 			  newPos = Vector2.add(t.xy, new Vector2(Math.cos(t.angle) * agentSettings.speed * deltaTime, Math.sin(t.angle) * agentSettings.speed * deltaTime));
 
-		if (newPos.x < 0 || newPos.x > t.limits.x || newPos.y < 0 || newPos.y > t.limits.y) {
+		if (!t.justBounced && (newPos.x < 0 || newPos.x > t.limits.x || newPos.y < 0 || newPos.y > t.limits.y)) {
 			t.xy = Vector2.clamp(t.xy, Vector2.zero, t.limits);
-			t.angle = Math.random() * (Math.PI * 2 * 2) - Math.PI * 2;//t.angle * -1 + Math.random() * 1.57 - 0.785;
+			t.angle = -t.angle + Math.random() * 0.4 - 0.2;
 			let index = t.colors.indexOf(t.color);
 			index = index + 1 === t.colors.length ? 0 : index + 1;
 			t.color = t.colors[index];
+			t.justBounced = true;
 		}
 		else {
 			t.xy = newPos;
+			t.justBounced = false;
 		}
 	}
 	getDirection(quadrant, quadrantsX, quadrantsY) {
@@ -152,7 +157,7 @@ let quadrantSize = 100, // in pixels
 
 let canvasSettings = {
 	query: "#canvas-output",
-	dimensions: new Vector2(1200, 700)
+	dimensions: new Vector2(1800, 900)
 }
 
 /** @const {Object} */
@@ -160,11 +165,12 @@ const agentSettings =  {
 	count: 2000,
 	limits: canvasSettings.dimensions,
 	xy: new Vector2(canvasSettings.dimensions.x / 2, canvasSettings.dimensions.y / 2),
-	angle: 1,
+	angle: new Vector2(0, Math.PI * 2),
 	speed: 300,
 	turnRate: 2,
-	colors: ["lightcoral", "white", "red"],
-	trailDim: 0.05
+	colors: ['#ffffff','#ffffe6','#ffffcc','#ffffb3','#ffff99','#ffff80','#ffff66','#ffff4d','#ffff33','#ffff1a','#ffff00','#e6e600','#cccc00','#b3b300','#999900','#808000','#666600','#4d4d00','#333300','#1a1a00','#000000'],
+	startColor: 0,
+	trailDim: 0
 }
 
 /** @const {Canvas} */
