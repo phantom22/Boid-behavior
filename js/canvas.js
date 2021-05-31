@@ -3,20 +3,20 @@ const deltaTime = 0.016;
 /** @const {Object} */
 const canvasSettings = {
     query: "#canvas-output",
-    dimensions: new Vector2(1800, 900),
-    quadrantSize: 100, // in pixels
+    dimensions: Vector2(1800, 900),
+    quadrantSize: 200, // in pixels
     quadrantDistance: 1
 }
 
 /** @const {Object} */
 const agentSettings =  {
-    count: 2000,
-    limits: canvasSettings.dimensions,
-    xy: new Vector2(canvasSettings.dimensions.x / 2, canvasSettings.dimensions.y / 2),
-    angle: new Vector2(0, Math.PI * 2),
+    count: 6000,
+    limits: [[0, 0], canvasSettings.dimensions],
+    xy: Vector2(canvasSettings.dimensions[0] / 2, canvasSettings.dimensions[1] / 2),
+    angle: Vector2(0, Math.PI * 2),
     speed: 300,
     turnRate: 2,
-    colors: ['#ffffff','#ffffe6','#ffffcc','#ffffb3','#ffff99','#ffff80','#ffff66','#ffff4d','#ffff33','#ffff1a','#ffff00','#e6e600','#cccc00','#b3b300','#999900','#808000','#666600','#4d4d00','#333300','#1a1a00','#000000'],
+    colors: "#ff8080 #ff9f80 #ffbf80 #ffdf80 #ffff80 #dfff80 #bfff80 #9fff80 #80ff80 #80ff9f #80ffbf #80ffdf #80ffff #80dfff #80bfff #809fff #8080ff #9f80ff #bf80ff #df80ff #ff80ff #ff80df #ff80bf #ff809f #ff8080".split(" "),
     startColor: 0,
     trailDim: 0
 }
@@ -24,10 +24,10 @@ const agentSettings =  {
 class Canvas {
     constructor(settings, agentSettings, callback) {
         const canvas = document.querySelector(settings.query);
-        canvas.width = settings.dimensions.x;
-        canvas.height = settings.dimensions.y;
-        canvas.style.width = settings.dimensions.x;
-        canvas.style.height = settings.dimensions.y;
+        canvas.width = settings.dimensions[0];
+        canvas.height = settings.dimensions[1];
+        canvas.style.width = settings.dimensions[0];
+        canvas.style.height = settings.dimensions[1];
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d");
         this.callback = callback;
@@ -48,7 +48,7 @@ class Canvas {
     }
     clear() {
         this.ctx.fillStyle = "black";
-        this.ctx.fillRect(0, 0, this.dimensions.x, this.dimensions.y);
+        this.ctx.fillRect(0, 0, this.dimensions[0], this.dimensions[1]);
     }
     drawLine(start, end, color) {
         const ctx = this.ctx;
@@ -56,8 +56,8 @@ class Canvas {
         ctx.lineJoin="round";
         ctx.strokeStyle = color;
         ctx.beginPath();
-        ctx.moveTo(start.x, start.y);
-        ctx.lineTo(end.x, end.y);
+        ctx.moveTo(start[0], start[1]);
+        ctx.lineTo(end[0], end[1]);
         ctx.stroke();
     }
     drawLoop() {
@@ -70,41 +70,48 @@ class Canvas {
 class Agent {
     constructor(settings) {
         this.limits = settings.limits;
-        this.xy = Array.isArray(settings.xy) ? Vector2.range(settings.xy[0], settings.xy[1]) : settings.xy;
-        this.angle = settings.angle instanceof Vector2 ? Math.random() * (settings.angle.y - settings.angle.x) + settings.angle.x : settings.angle;
+        this.xy = Array.isArray(settings.xy[0]) && Array.isArray(settings.xy[1]) ? Vector2.range(settings.xy[0], settings.xy[1]) : settings.xy;
+        this.angle = Array.isArray(settings.angle) ? Math.random() * (settings.angle[1] - settings.angle[0]) + settings.angle[0] : settings.angle;
         this.colors = settings.colors;
         this.color = typeof settings.startColor === "number" ? this.colors[settings.startColor] : this.colors[Math.floor(Math.random() * settings.colors.length)];
-        this.justBounced = false;
+
     }
     move() {
         const t = this, 
-              newPos = Vector2.add(t.xy, new Vector2(Math.cos(t.angle) * agentSettings.speed * deltaTime, Math.sin(t.angle) * agentSettings.speed * deltaTime));
+              newPos = Vector2.add(t.xy, Vector2(Math.cos(t.angle) * agentSettings.speed * deltaTime, Math.sin(t.angle) * agentSettings.speed * deltaTime));
 
-        if (!t.justBounced && (newPos.x < 0 || newPos.x > t.limits.x || newPos.y < 0 || newPos.y > t.limits.y)) {
-            t.xy = Vector2.clamp(t.xy, Vector2.zero, t.limits);
-            t.angle = -t.angle + Math.random() * 0.4 - 0.2;
+        // horizontal bounce
+        if (newPos[0] < t.limits[0][0] || newPos[0] > t.limits[1][0]) {
+            t.xy = Vector2.clamp(t.xy, t.limits[0], t.limits[1]);
+            t.angle = -t.angle * 2;
             let index = t.colors.indexOf(t.color);
             index = index + 1 === t.colors.length ? 0 : index + 1;
             t.color = t.colors[index];
-            t.justBounced = true;
+        }
+        // vertical bounce
+        else if (newPos[1] < t.limits[0][1] || newPos[1] > t.limits[1][1]) {
+            t.xy = Vector2.clamp(t.xy, t.limits[0], t.limits[1]);
+            t.angle = -t.angle + Math.random() * 0.12 - 0.12;
+            let index = t.colors.indexOf(t.color);
+            index = index + 1 === t.colors.length ? 0 : index + 1;
+            t.color = t.colors[index];
         }
         else {
             t.xy = newPos;
-            t.justBounced = false;
         }
     }
     getDirection(quadrant, quadrantsX, quadrantsY) {
-        const rad = this.angle - Math.PI / 2,
+        const rad = this.angle,
               qD = canvasSettings.quadrantDistance,
-              _all = [
-                    qD + quadrant + quadrantsX * qD + qD, 
-                    qD + quadrant + quadrantsX * qD, 
-                    qD + quadrant + quadrantsX * qD - qD, 
+              _all = [ 
                     qD + quadrant - qD, 
                     qD + quadrant - quadrantsX * qD - qD, 
                     qD + quadrant - quadrantsX * qD, 
                     qD + quadrant - quadrantsX * qD + qD, 
-                    qD + quadrant + qD
+                    qD + quadrant + qD,
+                    qD + quadrant + quadrantsX * qD - qD,
+                    qD + quadrant + quadrantsX * qD,
+                    qD + quadrant + quadrantsX * qD + qD
               ];
 
 
@@ -179,20 +186,20 @@ const CANVAS = new Canvas(canvasSettings, agentSettings, function(t) {
     // reset quadrants
     t.quadrants = [];
 
-    const quadrantsX = t.dimensions.x / canvasSettings.quadrantSize,
-          quadrantsY = t.dimensions.y / canvasSettings.quadrantSize,
-          _optimizedX = 1 / (t.dimensions.x / quadrantsX),
-          _optimizedY = 1 / (t.dimensions.y / quadrantsY);
+    const quadrantsX = t.dimensions[0] / canvasSettings.quadrantSize,
+          quadrantsY = t.dimensions[1] / canvasSettings.quadrantSize,
+          _optimizedX = 1 / (t.dimensions[0] / quadrantsX),
+          _optimizedY = 1 / (t.dimensions[1] / quadrantsY);
 
     // trail effect
     t.ctx.fillStyle = "rgba(0, 0, 0, " + agentSettings.trailDim + ")";
-    t.ctx.fillRect(0, 0, t.dimensions.x, t.dimensions.y);
+    t.ctx.fillRect(0, 0, t.dimensions[0], t.dimensions[1]);
 
     for (let i = 0; i < t.agents.length; i++) {
 
         // get current quadrant
         const oldPos = t.agents[i].xy,
-              quadrant = Math.floor(Math.floor(oldPos.y * _optimizedY) * quadrantsX + Math.floor(oldPos.x * _optimizedX));
+              quadrant = Math.floor(Math.floor(oldPos[1] * _optimizedY) * quadrantsX + Math.floor(oldPos[0] * _optimizedX));
 
         // update current quadrants number of agents
         if (typeof quadrants[quadrant] == "undefined") quadrants[quadrant] = 0;
