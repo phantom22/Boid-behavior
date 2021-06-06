@@ -1,4 +1,4 @@
 // https://www.w3schools.com/colors/colors_picker.asp
-function extractHue() { let allColors = []; document.querySelectorAll("#huecontainer .w3-table-all tr:not(:first-child) td:nth-child(3)").forEach(v => allColors.push(v.textContent)); return "['" + allColors.join("','") + "']"}
-function extractSaturation() { let allColors = []; document.querySelectorAll("#hslsatcontainer .w3-table-all tr:not(:first-child) td:nth-child(3)").forEach(v => allColors.push(v.textContent)); return "['" + allColors.join("','") + "']"}
-function extractLightness() { let allColors = []; document.querySelectorAll("#hsllumcontainer .w3-table-all tr:not(:first-child) td:nth-child(3)").forEach(v => allColors.push(v.textContent)); return "['" + allColors.join("','") + "']"}
+function extractHue() { let allColors = []; document.querySelectorAll("#huecontainer .w3-table-all tr:not(:first-child) td:nth-child(3)").forEach(v => allColors.push(v.textContent)); return  allColors.join(" ") }
+function extractSaturation() { let allColors = []; document.querySelectorAll("#hslsatcontainer .w3-table-all tr:not(:first-child) td:nth-child(3)").forEach(v => allColors.push(v.textContent)); return allColors.join(" ") }
+function extractLightness() { let allColors = []; document.querySelectorAll("#hsllumcontainer .w3-table-all tr:not(:first-child) td:nth-child(3)").forEach(v => allColors.push(v.textContent)); return allColors.join(" ") }

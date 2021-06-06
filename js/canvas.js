@@ -13,7 +13,7 @@ const agentSettings =  {
     count: 6000,
     limits: [[0, 0], canvasSettings.dimensions],
     xy: Vector2(canvasSettings.dimensions[0] / 2, canvasSettings.dimensions[1] / 2),
-    angle: Vector2(0, Math.PI * 2),
+    angle: Math.PI / 6,
     speed: 300,
     turnRate: 2,
     colors: "#ff8080 #ff9f80 #ffbf80 #ffdf80 #ffff80 #dfff80 #bfff80 #9fff80 #80ff80 #80ff9f #80ffbf #80ffdf #80ffff #80dfff #80bfff #809fff #8080ff #9f80ff #bf80ff #df80ff #ff80ff #ff80df #ff80bf #ff809f #ff8080".split(" "),
@@ -78,20 +78,13 @@ class Agent {
     }
     move() {
         const t = this, 
-              newPos = Vector2.add(t.xy, Vector2(Math.cos(t.angle) * agentSettings.speed * deltaTime, Math.sin(t.angle) * agentSettings.speed * deltaTime));
+              newPos = Vector2.add(t.xy, Vector2(Math.cos(t.angle) * agentSettings.speed * deltaTime, Math.sin(t.angle) * agentSettings.speed * deltaTime)),
+              xBounce = newPos[0] < t.limits[0][0] || newPos[0] > t.limits[1][0],
+              yBounce = newPos[1] < t.limits[0][1] || newPos[1] > t.limits[1][1];
 
-        // horizontal bounce
-        if (newPos[0] < t.limits[0][0] || newPos[0] > t.limits[1][0]) {
+        if (xBounce || yBounce) {
             t.xy = Vector2.clamp(t.xy, t.limits[0], t.limits[1]);
-            t.angle = -t.angle * 2;
-            let index = t.colors.indexOf(t.color);
-            index = index + 1 === t.colors.length ? 0 : index + 1;
-            t.color = t.colors[index];
-        }
-        // vertical bounce
-        else if (newPos[1] < t.limits[0][1] || newPos[1] > t.limits[1][1]) {
-            t.xy = Vector2.clamp(t.xy, t.limits[0], t.limits[1]);
-            t.angle = -t.angle + Math.random() * 0.12 - 0.12;
+            t.angle = xBounce ? Math.PI - t.angle : Math.PI * 2 - t.angle;
             let index = t.colors.indexOf(t.color);
             index = index + 1 === t.colors.length ? 0 : index + 1;
             t.color = t.colors[index];
